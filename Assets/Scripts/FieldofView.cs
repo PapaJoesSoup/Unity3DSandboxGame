@@ -1,60 +1,57 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class FieldOfView : MonoBehaviour
+namespace Assets.Scripts
 {
-  public float Radius;
-  [Range(0,360)]
-  public float Angle;
-
-  public GameObject PlayerRef;
-
-  public LayerMask TargetMask;
-  public LayerMask ObstructionMask;
-
-  public bool CanSeePlayer;
-
-  private void Start()
+  public class FieldOfView : MonoBehaviour
   {
-    PlayerRef = GameObject.FindGameObjectWithTag("Player");
-    StartCoroutine(FovRoutine());
-  }
+    public float Radius;
+    [Range(0,360)]
+    public float Angle;
 
-  private IEnumerator FovRoutine()
-  {
-    WaitForSeconds wait = new WaitForSeconds(0.2f);
+    public GameObject PlayerRef;
 
-    while (true)
+    public LayerMask TargetMask;
+    public LayerMask ObstructionMask;
+
+    public bool CanSeePlayer;
+
+    private void Start()
     {
-      yield return wait;
-      FieldOfViewCheck();
+      PlayerRef = GameObject.FindGameObjectWithTag("Player");
+      StartCoroutine(FovRoutine());
     }
-  }
 
-  private void FieldOfViewCheck()
-  {
-    Collider[] rangeChecks = Physics.OverlapSphere(transform.position, Radius, TargetMask);
-
-    if (rangeChecks.Length != 0)
+    private IEnumerator FovRoutine()
     {
-      Transform target = rangeChecks[0].transform;
-      Vector3 directionToTarget = (target.position - transform.position).normalized;
+      WaitForSeconds wait = new(0.2f);
 
-      if (Vector3.Angle(transform.forward, directionToTarget) < Angle / 2)
+      while (true)
       {
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        yield return wait;
+        FieldOfViewCheck();
+      }
+    }
 
-        if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, ObstructionMask))
-          CanSeePlayer = true;
+    private void FieldOfViewCheck()
+    {
+      Collider[] rangeChecks = Physics.OverlapSphere(transform.position, Radius, TargetMask);
+
+      if (rangeChecks.Length != 0)
+      {
+        Transform target = rangeChecks[0].transform;
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+
+        if (Vector3.Angle(transform.forward, directionToTarget) < Angle / 2)
+        {
+          float distanceToTarget = Vector3.Distance(transform.position, target.position);
+          CanSeePlayer = !Physics.Raycast(transform.position, directionToTarget, distanceToTarget, ObstructionMask);
+        }
         else
           CanSeePlayer = false;
       }
-      else
+      else if (CanSeePlayer)
         CanSeePlayer = false;
     }
-    else if (CanSeePlayer)
-      CanSeePlayer = false;
   }
 }

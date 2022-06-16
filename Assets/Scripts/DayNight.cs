@@ -1,20 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class DayNight : MonoBehaviour
+namespace Assets.Scripts
 {
-  float time = 50;
-  [SerializeField] float multiplier = 0;
-
-  // Update is called once per frame
-  void Update()
+  public class DayNight : MonoBehaviour
   {
-    time += Time.deltaTime * multiplier;
-    if(time > 360)
+    private float _time = 50;
+    [SerializeField] private float _multiplier = 0;
+
+    // Update is called once per frame
+    private void Update()
     {
-      time = 0;
+      _time += Time.deltaTime * _multiplier;
+      if(_time > 360)
+      {
+        _time = 0;
+      }
+      transform.rotation = Quaternion.Euler(_time, -30, 0);
     }
-    transform.rotation = Quaternion.Euler(time, -30, 0);
   }
 }

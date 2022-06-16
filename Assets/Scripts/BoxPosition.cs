@@ -1,36 +1,36 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class BoxPosition : MonoBehaviour
+namespace Assets.Scripts
 {
-  private Vector3 initialPosition;
-  private Quaternion initialRotation;
-  private KeyCode resetBox;
+  public class BoxPosition : MonoBehaviour
+  {
+    private Vector3 _initialPosition;
+    private Quaternion _initialRotation;
+    private KeyCode _resetBox;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
       PlayerController controller = FindObjectOfType<PlayerController>();
-      resetBox = controller.BoxReset;
+      _resetBox = controller.BoxReset;
 
-      initialPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-      initialRotation = new Quaternion(transform.rotation.x, transform.rotation.y, transform.rotation.z,
+      _initialPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+      _initialRotation = new Quaternion(transform.rotation.x, transform.rotation.y, transform.rotation.z,
         transform.rotation.w);
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-      if (!Input.GetKeyDown(resetBox)) return;
+      if (!Input.GetKeyDown(_resetBox)) return;
       ResetTransform();
     }
 
-    void ResetTransform()
+    private void ResetTransform()
     {
       GetComponent<Rigidbody>().velocity = new Vector3(0,0,0);
       GetComponent<Rigidbody>().angularVelocity = new Vector3(0,0,0);
-      transform.position = initialPosition;
-      transform.rotation = initialRotation;
+      transform.SetPositionAndRotation(_initialPosition, _initialRotation);
     }
+  }
 }

@@ -1,256 +1,327 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour
+namespace Assets.Scripts
 {
-  [Header("Linked GameObjects")]
+  public class PlayerController : MonoBehaviour
+  {
+    [Header("Linked GameObjects")]
+    public Camera OverheadCam;
     public Camera MainCamera;
+    public Canvas Hud;
     public GameObject FirePoint;
-    public GameObject Bullet;
-    public PhysicMaterial NormalPlayer;
+    private PhysicMaterial _normalPlayer;
     public PhysicMaterial PlayerBounce;
     public PhysicMaterial Flying;
-    public CapsuleCollider playerModelCollider;
+    public CapsuleCollider PlayerModelCollider;
     public Material BoxMaterial;
 
+    // UI components
+    private GameObject _playerHealthBarObj;
+    private Slider _playerHealthBar;
+    private Text _playerHealthBarText;
+
+    private GameObject _targetHealthBarObj;
+    private Slider _targetHealthBar;
+    private Text _targetHealthBarText;
+
+
     [Header("Movement Settings")]
-    [SerializeField] LayerMask groundMask;
-    public float moveSpeed = 6f;
+    [SerializeField]
+    private LayerMask _groundMask;
+    public float MoveSpeed = 6f;
     public float PDrag = 6f;
-    public float airDrag = 2f;
-    public float jumpForce = 5f;
-    public float upForce = 500f;
-    public float downForce = -1.5f;
+    public float AirDrag = 2f;
+    public float JumpForce = 5f;
+    public float UpForce = 500f;
+    public float DownForce = -1.5f;
     public float MaxSpeedMultiplier;
+    public Weapons Weapon = Weapons.Blaster;
     public float BulletSpeed;
-    Vector3 Position;
-    float horizontalMovement;
-    float verticalMovement;
-    float movementMultiplier = 10f;
-    [SerializeField] float airSpeedMultiplier = 0.4f;
-    Vector3 moveDirection;
+    public float BoltSpeed;
 
-    Rigidbody Rigbod;
-    bool isGrounded = false;
-    bool isFlying = false;
-    bool isBoxSummonAuto = false;
-    bool isBoxAutoAlign = false;
-    Vector3 maxFlyingSpeed; 
-    float maxSpeedDifferentialY;
+    private Vector3 _position;
+    private float _horizontalMovement;
+    private float _verticalMovement;
+    private float _movementMultiplier = 10f;
+    [SerializeField] private float _airSpeedMultiplier = 0.4f;
+    private Vector3 _moveDirection;
+
+    private Rigidbody _rigbod;
+    private bool _isGrounded = false;
+    private bool _isFlying = false;
+    private bool _isBoxSummonAuto = false;
+    private bool _isBoxAutoAlign = false;
+    private Vector3 _maxFlyingSpeed;
+    private float _maxSpeedDifferentialY;
     public int MaxFlyingSpeedY = 0;
-    public int MaxFlyingSpeedXZ = 0;
+    public int MaxFlyingSpeedXz = 0;
 
-    [Header("Player Settings")]
-    [SerializeField] KeyCode KeyCodePlayerModeNormal;
-    [SerializeField] KeyCode KeyCodePlayerModeBounce;
-    [SerializeField] KeyCode KeyCodePlayerModeFlying;
-    [SerializeField] KeyCode jumpKey;
-    [SerializeField] KeyCode upKey;
-    [SerializeField] KeyCode downKey;
-    [SerializeField] KeyCode BoxSummon;
-    [SerializeField] KeyCode BoxSummonauto;
-    [SerializeField] KeyCode BoxAutoAlign;
-    public KeyCode BoxReset;
+    [Header("Player KeyCode Settings")]
+    [SerializeField] private KeyCode _keyModeNormal;
+    [SerializeField] private KeyCode _keyModeBounce;
+    [SerializeField] private KeyCode _keyModeFlying;
+    [SerializeField] private KeyCode _jumpKey;
+    [SerializeField] private KeyCode _upKey;
+    [SerializeField] private KeyCode _downKey;
+    [SerializeField] private KeyCode _boxSummon;
+    [SerializeField] private KeyCode _boxSummonAuto;
+    [SerializeField] private KeyCode _boxAutoAlign;
+    [SerializeField] internal KeyCode BoxReset;
 
-    public float playerHeight = 2f;
+    [Header("Player Stats Settings")]
+    public float PlayerHeight = 2f;
+
+    [Header("Player Health Settings")]
+    [SerializeField] private float _health = 100f;
+    [SerializeField] private float _maxHealth = 100f;
+    [SerializeField] private float _playerPercentFactor;
+    private float _targetPercentFactor;
+
+
+
 
     private void Start()
     {
-      maxFlyingSpeed.y = MaxFlyingSpeedY;
-        maxFlyingSpeed.x = MaxFlyingSpeedXZ;
-        maxFlyingSpeed.z = MaxFlyingSpeedXZ;
-        playerModelCollider.material = NormalPlayer;
-        Rigbod = GetComponent<Rigidbody>();
-        Rigbod.freezeRotation = true;
+      _maxFlyingSpeed.y = MaxFlyingSpeedY;
+      _maxFlyingSpeed.x = MaxFlyingSpeedXz;
+      _maxFlyingSpeed.z = MaxFlyingSpeedXz;
+      PlayerModelCollider.material = _normalPlayer;
+      _rigbod = GetComponent<Rigidbody>();
+      _rigbod.freezeRotation = true;
+      OverheadCam.enabled = false;
+      SetupHealthBars();
     }
 
     private void Update()
     {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight / 2 + .1f, groundMask);
+      _isGrounded = Physics.Raycast(transform.position, Vector3.down, PlayerHeight / 2 + .1f, _groundMask);
 
-        MyInput();
-        ControlDrag();
-        Jump();
-        PlayerMoveModes();
-        Shoot();
-        SummonBoxes();
-        SetSpeeds();
+      MyInput();
+      FireWeapon();
+      MovePlayer();
+      ControlDrag();
+      Jump();
+      PlayerMoveModes();
+      SummonBoxes();
+      SetSpeeds();
+      SwitchCameras();
     }
 
     private void PlayerMoveModes()
     {
-      if (Input.GetKeyDown(KeyCodePlayerModeNormal))
+      _isFlying = false;
+      _rigbod.useGravity = true;
+      _airSpeedMultiplier = 0.06f;
+      AirDrag = 0.2f;
+      if (Input.GetKeyDown(_keyModeNormal))
       {
-        playerModelCollider.material = NormalPlayer;
-        Rigbod.useGravity = true;
-        airSpeedMultiplier = 0.06f;
-        airDrag = 0.2f;
-        print("Normal");
-        isFlying = false;
+        PlayerModelCollider.material = _normalPlayer;
+        //print("Normal");
 
       }
-      if (Input.GetKeyDown(KeyCodePlayerModeBounce))
+      if (Input.GetKeyDown(_keyModeBounce))
       {
-        playerModelCollider.material = PlayerBounce;
-        Rigbod.useGravity = true;
-        airSpeedMultiplier = 0.06f;
-        airDrag = 0.2f;
-        print("Bounce ");
-        isFlying = false;
-      }
-      if (Input.GetKeyDown(KeyCodePlayerModeFlying))
-      {
-        playerModelCollider.material = Flying;
-        Rigbod.useGravity = true;
-        airSpeedMultiplier = 0.5f;
-        airDrag = 2f;
-        print("Flying");
-        isFlying = true;
+        PlayerModelCollider.material = PlayerBounce;
+        //print("Bounce ");
 
       }
 
+      if (!Input.GetKeyDown(_keyModeFlying)) return;
+      PlayerModelCollider.material = Flying;
+      //print("Flying");
+
+      _isFlying = true;
+      _airSpeedMultiplier = 0.5f;
+      AirDrag = 2f;
     }
 
     private void SetSpeeds()
     {
       //Max speed stuff
-      if (Rigbod.velocity.y > maxFlyingSpeed.y)//Up max
+      if (_rigbod.velocity.y > _maxFlyingSpeed.y)//Up max
       {
-        maxSpeedDifferentialY = (maxFlyingSpeed.y - Rigbod.velocity.y) * MaxSpeedMultiplier;
-        Rigbod.AddForce(transform.up * maxSpeedDifferentialY * Time.deltaTime);
+        _maxSpeedDifferentialY = (_maxFlyingSpeed.y - _rigbod.velocity.y) * MaxSpeedMultiplier;
+        _rigbod.AddForce(_maxSpeedDifferentialY * Time.deltaTime * transform.up);
       }
-      if (Rigbod.velocity.y < -maxFlyingSpeed.y * 2)//Down max
-      {
 
-            
-        maxSpeedDifferentialY = (-Rigbod.velocity.y - maxFlyingSpeed.y) * MaxSpeedMultiplier;
-        Rigbod.AddForce(transform.up * maxSpeedDifferentialY * Time.deltaTime);
-            
-      }
-      //Max speed stuff
+      if (!(_rigbod.velocity.y < -_maxFlyingSpeed.y * 2)) return;
+      _maxSpeedDifferentialY = (-_rigbod.velocity.y - _maxFlyingSpeed.y) * MaxSpeedMultiplier;
+      _rigbod.AddForce(_maxSpeedDifferentialY * Time.deltaTime * transform.up);
 
     }
-    
+
+    private void SwitchCameras()
+    {
+      if (Input.GetKeyDown(KeyCode.C))
+      {
+        OverheadCam.enabled = !OverheadCam.enabled;
+      }
+    }
+
     private void SummonBoxes()
     {
-      if (Input.GetKeyDown(BoxSummon))
+      if (Input.GetKeyDown(_boxSummon))
       {
-        Position = transform.position;
-        CreateNewBox(Position);
+        _position = transform.position;
+        CreateNewBox(_position);
       }
-      if (Input.GetKeyDown(BoxSummonauto))
+      if (Input.GetKeyDown(_boxSummonAuto))
       {
-        isBoxSummonAuto = !isBoxSummonAuto;
+        _isBoxSummonAuto = !_isBoxSummonAuto;
       }
-      if (isBoxSummonAuto == true)
+      if (_isBoxSummonAuto == true)
       {
-        Position = transform.position;
-        CreateNewBox(Position);
+        _position = transform.position;
+        CreateNewBox(_position);
       }
 
-      if (!Input.GetKeyDown(BoxAutoAlign)) return;
-      isBoxAutoAlign = isBoxAutoAlign != true;
+      if (!Input.GetKeyDown(_boxAutoAlign)) return;
+      _isBoxAutoAlign = _isBoxAutoAlign != true;
 
     }
     
     private void Jump()
     {
-      if (Input.GetKeyDown(jumpKey) && isGrounded)
-        Rigbod.AddForce((transform.up) * jumpForce, ForceMode.Impulse);
+      if (Input.GetKeyDown(_jumpKey) && _isGrounded)
+        _rigbod.AddForce((transform.up) * JumpForce, ForceMode.Impulse);
     }
     
     private void Up() 
     {
-        if (Rigbod.velocity.y < maxFlyingSpeed.y)
-        {
-            Rigbod.AddForce(transform.up * upForce * Time.deltaTime);
-        }
-        else 
-        {
-        }
+      if (_rigbod.velocity.y < _maxFlyingSpeed.y)
+        _rigbod.AddForce(UpForce * Time.deltaTime * transform.up);
     }
     
     private void Down()
     {
-        Rigbod.AddForce(transform.up  * downForce * Time.deltaTime);
+      _rigbod.AddForce(DownForce * Time.deltaTime * transform.up);
     }
     
     private void MyInput()
     {
-        horizontalMovement = Input.GetAxisRaw("Horizontal");
-        verticalMovement = Input.GetAxisRaw("Vertical");
+      _horizontalMovement = Input.GetAxisRaw("Horizontal");
+      _verticalMovement = Input.GetAxisRaw("Vertical");
 
-        // this will set the move direction to the direction the camera is pointing.
-        moveDirection = MainCamera.transform.forward * verticalMovement + MainCamera.transform.right * horizontalMovement;
+      // this will set the move direction to the direction the camera is pointing.
+      _moveDirection = MainCamera.transform.forward * _verticalMovement + MainCamera.transform.right * _horizontalMovement;
     }
     
     private void FixedUpdate()
     {
-        MovePlayer();
-        if (Input.GetKey(upKey) && isFlying == true)
-        {
-            Up();
-        }
-        if (Input.GetKey(downKey) && isFlying == true)
-        {
-            Down();
-        }
+      if (Input.GetKey(_upKey) && _isFlying == true) Up();
+      if (Input.GetKey(_downKey) && _isFlying == true) Down();
     }
     
     private void ControlDrag()
     {
-        if (isGrounded)
-        {
-            Rigbod.drag = PDrag;
-        }
-        else
-        {
-            Rigbod.drag = airDrag;
-        }
+      _rigbod.drag = _isGrounded ? PDrag : AirDrag;
     }
     
     private void MovePlayer()
     {
-        if (isGrounded)
-        {
-            // lets point the player in the direction of the camera before we move.
-            transform.rotation = new Quaternion(transform.rotation.x, MainCamera.transform.localRotation.y, transform.rotation.z, transform.rotation.w);
-            Rigbod.AddForce(moveDirection.normalized * movementMultiplier * moveSpeed, ForceMode.Acceleration);
-        }
-        else
-        {
-            Rigbod.AddForce(moveDirection.normalized * movementMultiplier * moveSpeed * airSpeedMultiplier, ForceMode.Acceleration);
-        }
+      _rigbod.AddForce(_movementMultiplier * MoveSpeed * (_isGrounded ? 1 : _airSpeedMultiplier) * _moveDirection.normalized, ForceMode.Acceleration);
     }
     
-    private GameObject CreateNewBox(Vector3 Position)
+    private GameObject CreateNewBox(Vector3 position)
     {
-        if (isBoxAutoAlign)
-        {
-            Position.y = Mathf.Round(Position.y);
-            Position.x = Mathf.Round(Position.x);
-            Position.z = Mathf.Round(Position.z);
-        }
-        GameObject NewGameobject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Position.y = Position.y - 1.5f;
-        NewGameobject.transform.position = (Position);
-        NewGameobject.transform.localScale = new Vector3(1, 1, 1);
-        NewGameobject.layer = 3;
-        return NewGameobject;
+      if (_isBoxAutoAlign)
+      {
+        position.y = Mathf.Round(position.y);
+        position.x = Mathf.Round(position.x);
+        position.z = Mathf.Round(position.z);
+      }
+      GameObject newGameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+      position.y -= 1.5f;
+      newGameObject.transform.position = (position);
+      newGameObject.transform.localScale = new(1, 1, 1);
+      newGameObject.layer = 3;
+      return newGameObject;
 
     }
-    
-    private void Shoot()
+
+    private void FireWeapon()
+    {
+      switch (Weapon)
+      {
+        case Weapons.Blaster:
+          FireProjectile(ObjectPool.PoolType.Bolt);
+          break;
+        case Weapons.Gun:
+        default:
+          FireProjectile(ObjectPool.PoolType.Bullet);
+          break;
+      }
+    }
+
+    private void FireProjectile(ObjectPool.PoolType type)
     {
       if (!Input.GetButtonDown("Fire1")) return;
-        Vector3 InitialPoint = new Vector3();
-        InitialPoint = FirePoint.transform.position;
-        GameObject bullet = Instantiate(Bullet, InitialPoint, FirePoint.transform.rotation);
-        Rigidbody pbody = bullet.GetComponent<Rigidbody>();
-        pbody.velocity = FirePoint.transform.forward * BulletSpeed;
+      GameObject projectile = ObjectPool.Instance.GetPooledObject(type);
+      if (projectile == null) return;
+      projectile.SetActive(true);
+      Quaternion rotation = new(
+        FirePoint.transform.rotation.x,
+        transform.rotation.y, 
+        transform.rotation.z, 
+        transform.rotation.w);
+      float velocity = projectile.GetComponent<Projectile>().Velocity;
 
-        //print("Shot Fired!");
+      projectile.transform.position = FirePoint.transform.position;
+      projectile.transform.localRotation = rotation;
+      projectile.GetComponent<Rigidbody>().velocity = FirePoint.transform.forward * velocity;
     }
 
+    public void ApplyDamage(float damage)
+    {
+      _health -= damage;
+      if(_health < 0) _health = 0;
+      _playerHealthBar.value = _health * _playerPercentFactor;
+      _playerHealthBarObj.GetComponentInChildren<Text>().text = _playerHealthBar.value + "%";
+      if (_health == 0) PlayerDeath();
+    }
+
+    private void SetupHealthBars()
+    {
+      _playerHealthBarObj = GameObject.Find("PlayerHealthBar");
+      _playerHealthBar = _playerHealthBarObj.GetComponent<Slider>();
+      _playerHealthBarText = _playerHealthBarObj.GetComponentInChildren<Text>();
+      _playerHealthBarObj.SetActive(true);
+
+      _targetHealthBarObj = GameObject.Find("TargetHealthBar");
+      _targetHealthBar = _targetHealthBarObj.GetComponent<Slider>();
+      _targetHealthBarText = _targetHealthBar.GetComponentInChildren<Text>();
+      _targetHealthBarObj.SetActive(false);
+
+      _playerPercentFactor = _playerHealthBar.maxValue / _maxHealth;
+      _playerHealthBar.value = _health * _playerPercentFactor;
+      _playerHealthBarText.text = _playerHealthBar.value + "%";
+    }
+
+    private void SetupTargetHealthBar(GameObject target)
+    {
+      EnemyController enemy = target.GetComponent<EnemyController>();
+      if (enemy != null)
+      {
+        _targetPercentFactor = _targetHealthBar.maxValue / enemy._maxHealth;
+        _targetHealthBar.value = enemy._health * _targetPercentFactor;
+        _targetHealthBarText.text = _targetHealthBar.value + "%";
+      }
+
+      _targetPercentFactor = _targetHealthBar.maxValue / _maxHealth;
+      _playerHealthBar.value = _health * _targetPercentFactor;
+      _playerHealthBarText.text = _playerHealthBar.value + "%";
+    }
+
+    private void PlayerDeath()
+    {
+      gameObject.SetActive(false);
+    }
+
+    public enum Weapons
+    {
+      Blaster,
+      Gun
+    }
+  }
 }

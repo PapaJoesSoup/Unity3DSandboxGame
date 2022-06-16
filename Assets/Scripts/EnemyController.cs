@@ -1,25 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+namespace Assets.Scripts
 {
+  public class EnemyController : MonoBehaviour
+  {
+
+    [Header("Health Settings")]
+    [SerializeField] internal float _health = 100f;
+    [SerializeField] internal float _maxHealth = 100f;
+
+
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         
     }
 
     //from http://forum.unity3d.com/threads/raycasting-a-cone-instead-of-single-ray.39426/
-    bool CanSeePlayer(GameObject target)
+    private bool CanSeePlayer(GameObject target)
     {
       float heightOfPlayer = 1.5f;
  
@@ -46,4 +52,5 @@ public class EnemyController : MonoBehaviour
       return false;
     }
     
+  }
 }
