@@ -5,6 +5,7 @@ namespace Assets.Scripts
 {
   public class PlayerController : MonoBehaviour
   {
+    #region Properties
     [Header("Linked GameObjects")]
     public Camera OverheadCam;
     public Camera MainCamera;
@@ -37,8 +38,6 @@ namespace Assets.Scripts
     public float DownForce = -1.5f;
     public float MaxSpeedMultiplier;
     public Weapons Weapon = Weapons.Blaster;
-    public float BulletSpeed;
-    public float BoltSpeed;
 
     private Vector3 _position;
     private float _horizontalMovement;
@@ -58,16 +57,7 @@ namespace Assets.Scripts
     public int MaxFlyingSpeedXz = 0;
 
     [Header("Player KeyCode Settings")]
-    [SerializeField] private KeyCode _keyModeNormal;
-    [SerializeField] private KeyCode _keyModeBounce;
-    [SerializeField] private KeyCode _keyModeFlying;
-    [SerializeField] private KeyCode _jumpKey;
-    [SerializeField] private KeyCode _upKey;
-    [SerializeField] private KeyCode _downKey;
-    [SerializeField] private KeyCode _boxSummon;
-    [SerializeField] private KeyCode _boxSummonAuto;
-    [SerializeField] private KeyCode _boxAutoAlign;
-    [SerializeField] internal KeyCode BoxReset;
+    private KeyMap _map;
 
     [Header("Player Stats Settings")]
     public float PlayerHeight = 2f;
@@ -77,9 +67,9 @@ namespace Assets.Scripts
     [SerializeField] private float _maxHealth = 100f;
     [SerializeField] private float _playerPercentFactor;
     private float _targetPercentFactor;
+    #endregion Properties
 
-
-
+    #region Event Handlers
 
     private void Start()
     {
@@ -91,10 +81,12 @@ namespace Assets.Scripts
       _rigbod.freezeRotation = true;
       OverheadCam.enabled = false;
       SetupHealthBars();
+      _map = KeyMap.Instance;
     }
 
     private void Update()
     {
+      if (CanvasUI.UiActive) return;
       _isGrounded = Physics.Raycast(transform.position, Vector3.down, PlayerHeight / 2 + .1f, _groundMask);
 
       MyInput();
@@ -108,32 +100,74 @@ namespace Assets.Scripts
       SwitchCameras();
     }
 
+    private void FixedUpdate()
+    {
+      if (CanvasUI.UiActive) return;
+      if (_map.KeyList[_map.Up].IsKey() && _isFlying == true) Up();
+      if (_map.KeyList[_map.Down].IsKey() && _isFlying == true) Down();
+    }
+
+    #endregion Event Handlers
+
+    #region Movement
+
     private void PlayerMoveModes()
     {
       _isFlying = false;
       _rigbod.useGravity = true;
       _airSpeedMultiplier = 0.06f;
       AirDrag = 0.2f;
-      if (Input.GetKeyDown(_keyModeNormal))
+      if (_map.KeyList[_map.ModeNormal].IsKeyDown())
       {
         PlayerModelCollider.material = _normalPlayer;
         //print("Normal");
 
       }
-      if (Input.GetKeyDown(_keyModeBounce))
+      if (_map.KeyList[_map.ModeBounce].IsKeyDown())
       {
         PlayerModelCollider.material = PlayerBounce;
         //print("Bounce ");
 
       }
 
-      if (!Input.GetKeyDown(_keyModeFlying)) return;
+      if (!_map.KeyList[_map.ModeFlying].IsKeyDown()) return;
       PlayerModelCollider.material = Flying;
       //print("Flying");
 
       _isFlying = true;
       _airSpeedMultiplier = 0.5f;
       AirDrag = 2f;
+    }
+
+    private void MyInput()
+    {
+      _horizontalMovement = Input.GetAxisRaw("Horizontal");
+      _verticalMovement = Input.GetAxisRaw("Vertical");
+
+      // this will set the move direction to the direction the camera is pointing.
+      _moveDirection = MainCamera.transform.forward * _verticalMovement + MainCamera.transform.right * _horizontalMovement;
+    }
+    
+    private void MovePlayer()
+    {
+      _rigbod.AddForce(_movementMultiplier * MoveSpeed * (_isGrounded ? 1 : _airSpeedMultiplier) * _moveDirection.normalized, ForceMode.Acceleration);
+    }
+
+    private void Jump()
+    {
+      if (_map.KeyList[_map.Jump].IsKeyDown() && _isGrounded)
+        _rigbod.AddForce((transform.up) * JumpForce, ForceMode.Impulse);
+    }
+    
+    private void Up() 
+    {
+      if (_rigbod.velocity.y < _maxFlyingSpeed.y)
+        _rigbod.AddForce(UpForce * Time.deltaTime * transform.up);
+    }
+    
+    private void Down()
+    {
+      _rigbod.AddForce(DownForce * Time.deltaTime * transform.up);
     }
 
     private void SetSpeeds()
@@ -150,7 +184,15 @@ namespace Assets.Scripts
       _rigbod.AddForce(_maxSpeedDifferentialY * Time.deltaTime * transform.up);
 
     }
+    
+    private void ControlDrag()
+    {
+      _rigbod.drag = _isGrounded ? PDrag : AirDrag;
+    }
+    
+    #endregion Movement
 
+    #region Cameras
     private void SwitchCameras()
     {
       if (Input.GetKeyDown(KeyCode.C))
@@ -158,15 +200,17 @@ namespace Assets.Scripts
         OverheadCam.enabled = !OverheadCam.enabled;
       }
     }
+    #endregion Cameras
 
+    #region Boxes
     private void SummonBoxes()
     {
-      if (Input.GetKeyDown(_boxSummon))
+      if (_map.KeyList[_map.BoxSummon].IsKeyDown())
       {
         _position = transform.position;
         CreateNewBox(_position);
       }
-      if (Input.GetKeyDown(_boxSummonAuto))
+      if (_map.KeyList[_map.BoxAutoSummon].IsKeyDown())
       {
         _isBoxSummonAuto = !_isBoxSummonAuto;
       }
@@ -176,51 +220,9 @@ namespace Assets.Scripts
         CreateNewBox(_position);
       }
 
-      if (!Input.GetKeyDown(_boxAutoAlign)) return;
+      if (!_map.KeyList[_map.BoxAutoAlign].IsKeyDown()) return;
       _isBoxAutoAlign = _isBoxAutoAlign != true;
 
-    }
-    
-    private void Jump()
-    {
-      if (Input.GetKeyDown(_jumpKey) && _isGrounded)
-        _rigbod.AddForce((transform.up) * JumpForce, ForceMode.Impulse);
-    }
-    
-    private void Up() 
-    {
-      if (_rigbod.velocity.y < _maxFlyingSpeed.y)
-        _rigbod.AddForce(UpForce * Time.deltaTime * transform.up);
-    }
-    
-    private void Down()
-    {
-      _rigbod.AddForce(DownForce * Time.deltaTime * transform.up);
-    }
-    
-    private void MyInput()
-    {
-      _horizontalMovement = Input.GetAxisRaw("Horizontal");
-      _verticalMovement = Input.GetAxisRaw("Vertical");
-
-      // this will set the move direction to the direction the camera is pointing.
-      _moveDirection = MainCamera.transform.forward * _verticalMovement + MainCamera.transform.right * _horizontalMovement;
-    }
-    
-    private void FixedUpdate()
-    {
-      if (Input.GetKey(_upKey) && _isFlying == true) Up();
-      if (Input.GetKey(_downKey) && _isFlying == true) Down();
-    }
-    
-    private void ControlDrag()
-    {
-      _rigbod.drag = _isGrounded ? PDrag : AirDrag;
-    }
-    
-    private void MovePlayer()
-    {
-      _rigbod.AddForce(_movementMultiplier * MoveSpeed * (_isGrounded ? 1 : _airSpeedMultiplier) * _moveDirection.normalized, ForceMode.Acceleration);
     }
     
     private GameObject CreateNewBox(Vector3 position)
@@ -239,7 +241,9 @@ namespace Assets.Scripts
       return newGameObject;
 
     }
+    #endregion Boxes
 
+    #region Weapons
     private void FireWeapon()
     {
       switch (Weapon)
@@ -256,7 +260,7 @@ namespace Assets.Scripts
 
     private void FireProjectile(ObjectPool.PoolType type)
     {
-      if (!Input.GetButtonDown("Fire1")) return;
+      if (!_map.KeyList[_map.Fire].IsKeyDown()) return;
       GameObject projectile = ObjectPool.Instance.GetPooledObject(type);
       if (projectile == null) return;
       projectile.SetActive(true);
@@ -271,7 +275,15 @@ namespace Assets.Scripts
       projectile.transform.localRotation = rotation;
       projectile.GetComponent<Rigidbody>().velocity = FirePoint.transform.forward * velocity;
     }
+    
+    public enum Weapons
+    {
+      Blaster,
+      Gun
+    }
+    #endregion Weapons
 
+    #region Health
     public void ApplyDamage(float damage)
     {
       _health -= damage;
@@ -317,11 +329,6 @@ namespace Assets.Scripts
     {
       gameObject.SetActive(false);
     }
-
-    public enum Weapons
-    {
-      Blaster,
-      Gun
-    }
+    #endregion Health
   }
 }

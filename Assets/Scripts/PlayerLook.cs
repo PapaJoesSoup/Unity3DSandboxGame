@@ -22,16 +22,13 @@ namespace Assets.Scripts
 
     private void Start()
     {
-      Cursor.lockState = CursorLockMode.Locked;
-      Cursor.visible = false;
     }
 
     private void Update()
     {
+      if (CanvasUI.UiActive) return;
       MouseInput();
-
       MouseLook();
-
       SwitchCameraView();
     }
 

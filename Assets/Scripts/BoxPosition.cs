@@ -6,14 +6,10 @@ namespace Assets.Scripts
   {
     private Vector3 _initialPosition;
     private Quaternion _initialRotation;
-    private KeyCode _resetBox;
 
     // Start is called before the first frame update
     private void Start()
     {
-      PlayerController controller = FindObjectOfType<PlayerController>();
-      _resetBox = controller.BoxReset;
-
       _initialPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
       _initialRotation = new Quaternion(transform.rotation.x, transform.rotation.y, transform.rotation.z,
         transform.rotation.w);
@@ -22,7 +18,7 @@ namespace Assets.Scripts
     // Update is called once per frame
     private void Update()
     {
-      if (!Input.GetKeyDown(_resetBox)) return;
+      if (!KeyMap.Instance.KeyList[KeyMap.Instance.BoxReset].IsKeyDown()) return;
       ResetTransform();
     }
 

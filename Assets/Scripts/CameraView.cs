@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using UnityEngine;
 
 
@@ -34,6 +35,7 @@ public class CameraView : MonoBehaviour
   // Update is called once per frame
   private void Update()
   {
+    if (CanvasUI.UiActive) return;
     PlayerInput();
     ManipulateCameras();
     CameraZoom();
