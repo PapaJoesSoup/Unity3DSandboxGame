@@ -19,6 +19,7 @@ Features:
 - Overhead Camera view with look up, down, left and right, Camera Pan and zoom with rotate around the point being looked at.
 - Basic player movement with wasd style movement.  forwards and backwards, strafe left and strafe right.
 - multiple movement modes:  Normal, Bouncy, and Flying modes with different physics materials for each.
+- Legacy Input system supported.
 - UI based Key mapping feature.  Two input methods for each action are supported.  Keys can be reprogrammed in game.
 - Player and enemy health bars with percent readout.
 - UI Minimap feature.
