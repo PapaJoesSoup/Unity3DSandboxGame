@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -20,10 +18,10 @@ namespace Assets.Scripts
 	/// 
 	/// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 	/// http://forum.unity3d.com/members/102350-Mistale
-    /// 
-    /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
-    /// http://forum.unity3d.com/members/lex-drl.67487/
-    /// 
+  /// 
+  /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
+  /// http://forum.unity3d.com/members/lex-drl.67487/
+  /// 
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
 	[RequireComponent(typeof(MeshRenderer))]
@@ -91,7 +89,7 @@ namespace Assets.Scripts
 
 		#region properties
 		/// <summary>
-		/// Gets or sets the tmplate material.
+		/// Gets or sets the template material.
 		/// Setting this will only have an impact once. 
 		/// Subsequent changes will be ignored.
 		/// </summary>
@@ -123,12 +121,10 @@ namespace Assets.Scripts
 			set
 			{
 				CreateMaterial();
-				if (null != m_material)
-				{
-					m_lineColor = value;
-					m_material.color = m_lineColor;
-				}
-			}
+        if (null == m_material) return;
+        m_lineColor = value;
+        m_material.color = m_lineColor;
+      }
 		}
 
 		/// <summary>
@@ -199,33 +195,29 @@ namespace Assets.Scripts
 		/// Creates a copy of the template material for this instance
 		/// </summary>
 		private void CreateMaterial()
-		{
-			if (null == m_material || null == GetComponent<MeshRenderer>().sharedMaterial)
-			{
-				if (null != m_templateMaterial)
-				{
-					m_material = Material.Instantiate(m_templateMaterial);
-					GetComponent<MeshRenderer>().sharedMaterial = m_material;
-					SetAllMaterialProperties();
-				}
-				else 
-				{
-					m_material = GetComponent<MeshRenderer>().sharedMaterial;
-				}
-			}
-		}
+    {
+      if (null != m_material && null != GetComponent<MeshRenderer>().sharedMaterial) return;
+      if (null != m_templateMaterial)
+      {
+        m_material = Material.Instantiate(m_templateMaterial);
+        GetComponent<MeshRenderer>().sharedMaterial = m_material;
+        SetAllMaterialProperties();
+      }
+      else 
+      {
+        m_material = GetComponent<MeshRenderer>().sharedMaterial;
+      }
+    }
 
 		/// <summary>
 		/// Destroys the copy of the template material which was used for this instance
 		/// </summary>
 		private void DestroyMaterial()
-		{
-			if (null != m_material)
-			{
-				DestroyImmediate(m_material);
-				m_material = null;
-			}
-		}
+    {
+      if (null == m_material) return;
+      DestroyImmediate(m_material);
+      m_material = null;
+    }
 
 		/// <summary>
 		/// Calculates the (approximated) _LineScale factor based on the object's scale.
@@ -239,12 +231,10 @@ namespace Assets.Scripts
 		/// Updates the line scaling of this volumetric line based on the current object scaling.
 		/// </summary>
 		public void UpdateLineScale()
-		{
-			if (null != m_material) 
-			{
-				m_material.SetFloat("_LineScale", CalculateLineScale());
-			}
-		}
+    {
+      if (null == m_material) return;
+      m_material.SetFloat("_LineScale", CalculateLineScale());
+    }
 
 		/// <summary>
 		/// Sets all material properties (color, width, light saber factor, start-, endpos)
@@ -253,17 +243,15 @@ namespace Assets.Scripts
 		{
 			SetStartAndEndPoints(m_startPos, m_endPos);
 
-			if (null != m_material)
-			{
-				if (m_doNotOverwriteTemplateMaterialProperties)
-				{
-					m_material.color = m_lineColor;
-					m_material.SetFloat("_LineWidth", m_lineWidth);
-					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
-				}
-				UpdateLineScale();
-			}
-		}
+      if (null == m_material) return;
+      if (m_doNotOverwriteTemplateMaterialProperties)
+      {
+        m_material.color = m_lineColor;
+        m_material.SetFloat("_LineWidth", m_lineWidth);
+        m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+      }
+      UpdateLineScale();
+    }
 
 		/// <summary>
 		/// Calculate the bounds of this line based on start and end points,
@@ -271,15 +259,15 @@ namespace Assets.Scripts
 		/// </summary>
 		private Bounds CalculateBounds()
 		{
-			var maxWidth = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
-			var scaledLineWidth = maxWidth * LineWidth * 0.5f;
+			float maxWidth = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+			float scaledLineWidth = maxWidth * LineWidth * 0.5f;
 
-			var min = new Vector3(
+			Vector3 min = new Vector3(
 				Mathf.Min(m_startPos.x, m_endPos.x) - scaledLineWidth,
 				Mathf.Min(m_startPos.y, m_endPos.y) - scaledLineWidth,
 				Mathf.Min(m_startPos.z, m_endPos.z) - scaledLineWidth
 			);
-			var max = new Vector3(
+			Vector3 max = new Vector3(
 				Mathf.Max(m_startPos.x, m_endPos.x) + scaledLineWidth,
 				Mathf.Max(m_startPos.y, m_endPos.y) + scaledLineWidth,
 				Mathf.Max(m_startPos.z, m_endPos.z) + scaledLineWidth
@@ -297,17 +285,15 @@ namespace Assets.Scripts
 		/// which there are: start point, end point, line width, scaling of the object.
 		/// </summary>
 		public void UpdateBounds()
-		{
-			if (null != m_meshFilter)
-			{
-				var mesh = m_meshFilter.sharedMesh;
-				Debug.Assert(null != mesh);
-				if (null != mesh)
-				{
-					mesh.bounds = CalculateBounds();
-				}
-			}
-		}
+    {
+      if (null == m_meshFilter) return;
+      Mesh mesh = m_meshFilter.sharedMesh;
+      Debug.Assert(null != mesh);
+      if (null != mesh)
+      {
+        mesh.bounds = CalculateBounds();
+      }
+    }
 
 		/// <summary>
 		/// Sets the start and end points - updates the data of the Mesh.
@@ -339,18 +325,14 @@ namespace Assets.Scripts
 				m_startPos,
 			};
 
-			if (null != m_meshFilter)
-			{
-				var mesh = m_meshFilter.sharedMesh;
-				Debug.Assert(null != mesh);
-				if (null != mesh)
-				{
-					mesh.vertices = vertexPositions;
-					mesh.normals = other;
-					UpdateBounds();
-				}
-			}
-		}
+      if (null == m_meshFilter) return;
+      Mesh mesh = m_meshFilter.sharedMesh;
+      Debug.Assert(null != mesh);
+      if (null == mesh) return;
+      mesh.vertices = vertexPositions;
+      mesh.normals = other;
+      UpdateBounds();
+    }
 		#endregion
 
 		#region event functions
@@ -385,20 +367,18 @@ namespace Assets.Scripts
 		}
 		
 		void Update()
-		{
-			if (transform.hasChanged)
-			{
-				UpdateLineScale();
-				UpdateBounds();
-			}
-		}
+    {
+      if (!transform.hasChanged) return;
+      UpdateLineScale();
+      UpdateBounds();
+    }
 
 		void OnValidate()
 		{
 			// This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
 			//  => make sure, everything stays up-to-date
 			if(string.IsNullOrEmpty(gameObject.scene.name) || string.IsNullOrEmpty(gameObject.scene.path)) {
-				return; // ...but not if a Prefab is selected! (Only if we're using it within a scene.)
+				return; // ...but not if a PrefabObject is selected! (Only if we're using it within a scene.)
 			}
 			CreateMaterial();
 			SetAllMaterialProperties();

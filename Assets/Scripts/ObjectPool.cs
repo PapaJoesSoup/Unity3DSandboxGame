@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+  /// <summary>
+  /// Legacy Object pool class.  Unity now includes an ObjectPool scheme of its own.
+  /// </summary>
   public class ObjectPool : MonoBehaviour
   {
 
@@ -11,92 +14,88 @@ namespace Assets.Scripts
     // this makes the class a singleton
     public static ObjectPool Instance;
 
-    // Using Dictionaries to allow for adding prefabs as needed and making the class more generic.
-    // simply add to the PoolType enum to extend.
+    [Header("Object Pool Settings")]
+    // Unity cannot show dictionaries in the Inspector, so we will create a PrefabItem list
+    // to populate the dictionary.
+    public List<PrefabItem> PrefabItemList = new();
 
-    // Unity cannot show dictionaries in the Inspector, so we will create 2 keyValuePair lists
-    // to populate the needed dictionaries.
-    public List<PrefabItem> PrefabObjectList = new();
-    private Dictionary<PoolType, GameObject> _prefabs = new();
-
-    public List<PrefabCount> PrefabCountList = new();
-    private Dictionary<PoolType, int> _poolCount = new();
-
-    //This is where we store all of our pooled prefab objects.
-    private Dictionary<PoolType, List<GameObject>> _pools = new();
+    // This is where we store all of our pooled prefab objects.
+    // This is essentially a list of object lists organized by PoolType 
+    internal Dictionary<PoolType, List<GameObject>> Pools = new();
     #endregion Properties
 
     // Awake is called when game loads
     private void Awake()
     {
-      // Fill the Prefabs Dictionary
-      foreach (var kvp in PrefabObjectList)
-      {
-        _prefabs.Add(kvp.Type, kvp.Prefab);
-      }
-
-      // Fill the PoolCount Dictionary
-      foreach (var kvp in PrefabCountList)
-      {
-        _poolCount.Add(kvp.Type, kvp.NoCount);
-      }
+      // Load prefab object data from the inspector (PrefabItemList) and populate the Pools dictionary.
+      LoadObjectPool();
 
       // load the singleton instance.
-      if (Instance != null) return;
-      Instance = this;
+      if (Instance == null) Instance = this;
     }
 
-    private void Start()
+    private void LoadObjectPool()
     {
-      foreach (KeyValuePair<PoolType, GameObject> prefab in _prefabs)
+      // Fill the Object Pools
+      foreach (PrefabItem prefab in PrefabItemList)
       {
-        PoolType poolType = prefab.Key;
-        GameObject prefabObject = prefab.Value;
-        List<GameObject> pool = new();
-        GameObject parent = new();
+        PoolType poolType = prefab.Type;
+        GameObject prefabObject = prefab.PrefabObject;
+        List<GameObject> pool = new List<GameObject>();
+        GameObject parent = new GameObject();
+        parent.name = prefab.Type.ToString();
         parent.transform.parent = gameObject.transform;
-        parent.name = prefab.Key.ToString();
-        for (int i = 0; i < _poolCount[poolType]; i++)
+        for (int i = 0; i < prefab.Quantity; i++)
         {
           GameObject obj = Instantiate(prefabObject, parent.transform);
           obj.SetActive(false);
           pool.Add(obj);
         }
-        _pools.Add(poolType, pool);
-        //pool.Clear();
-
+        Pools.Add(poolType, pool);
       }
     }
 
     // Method to retrieve an available object from the pool
     public GameObject GetPooledObject(PoolType type)
     {
-      for (int i = 0; i < _pools[type].Count; i++)
+      for (int i = 0; i < Pools[type].Count; i++)
       {
-        if (_pools[type][i].activeInHierarchy) continue;
-        return _pools[type][i];
+        if (Pools[type][i].activeInHierarchy) continue;
+        return Pools[type][i];
       }
-      // if no object available, add one to the pool and return it.
-      return AddPooledObject(type);
+      // If no available object is found, return null
+      return null;
     }
 
-    // Add an object to an existing object pool.
-    private GameObject AddPooledObject(PoolType type)
+    public GameObject GetPooledObject(PoolType type, bool addNew)
     {
-      GameObject prefab = Instantiate(_prefabs[type], gameObject.transform);
-      prefab.SetActive(false);
-      _pools[type].Add(prefab);
-      return prefab;
+      GameObject result = GetPooledObject(type);
+      if (result != null || !addNew) return result;
+      // if the result is null and addNew is true, add a new object to the pool and update the dictionary
+      PrefabItem prefabitem = GetPrefabItem(type);
+      List<GameObject> pool = Pools[type];
+      GameObject parent = GameObject.Find(type.ToString());
+      result = Instantiate(prefabitem.PrefabObject, parent.transform);
+      result.SetActive(false);
+      pool.Add(result);
+      Pools[type] = pool;
+
+      return result;
     }
 
-    public int GetPooledObjectCount(PoolType type)
+    public PrefabItem GetPrefabItem(PoolType type)
     {
-      return _poolCount[type];
+      foreach(PrefabItem item in PrefabItemList)
+      {
+        if (item.Type == type) return item;
+      }
+      return null;
     }
 
     [Serializable]
     public enum PoolType
     {
+      Laser,
       Bolt,
       Bullet,
       Splash,
@@ -104,27 +103,21 @@ namespace Assets.Scripts
       BulletHole,
       BoltBurn,
       Box,
+      Blast1,
+      Blast2,
       Asteroid1,
       Asteroid2,
       Asteroid3,
-      Asteroid4,
-      Explosion1,
-      Explosion2,
+      Asteroid4
     }
 
-    // KeyValuePair classes to allow exposing configuration lists to the Inspector.
+    // KeyValuePair class to allow exposing configuration lists to the Inspector.
     [Serializable]
     public class PrefabItem
     {
       public PoolType Type;
-      public GameObject Prefab;
-    }
-
-    [Serializable]
-    public class PrefabCount
-    {
-      public PoolType Type;
-      public int NoCount;
+      public GameObject PrefabObject;
+      public int Quantity;
     }
   }
 }

@@ -7,7 +7,7 @@ namespace Assets.Scripts
   {
     public float Radius;
     [Range(0,360)]
-    public float Angle;
+    public float FovAngle;
 
     public GameObject PlayerRef;
 
@@ -42,7 +42,7 @@ namespace Assets.Scripts
         Transform target = rangeChecks[0].transform;
         Vector3 directionToTarget = (target.position - transform.position).normalized;
 
-        if (Vector3.Angle(transform.forward, directionToTarget) < Angle / 2)
+        if (Vector3.Angle(transform.forward, directionToTarget) < FovAngle / 2)
         {
           float distanceToTarget = Vector3.Distance(transform.position, target.position);
           CanSeePlayer = !Physics.Raycast(transform.position, directionToTarget, distanceToTarget, ObstructionMask);

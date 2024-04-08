@@ -11,25 +11,24 @@ namespace Assets.Scripts
     public Camera MainCamera;
     public Canvas Hud;
     public GameObject FirePoint;
-    private PhysicMaterial _normalPlayer;
+    private PhysicMaterial normalPlayer;
     public PhysicMaterial PlayerBounce;
     public PhysicMaterial Flying;
     public CapsuleCollider PlayerModelCollider;
     public Material BoxMaterial;
 
     // UI components
-    private GameObject _playerHealthBarObj;
-    private Slider _playerHealthBar;
-    private Text _playerHealthBarText;
+    private GameObject playerHealthBarObj;
+    private Slider playerHealthBar;
+    private Text playerHealthBarText;
 
-    private GameObject _targetHealthBarObj;
-    private Slider _targetHealthBar;
-    private Text _targetHealthBarText;
-
+    private GameObject targetHealthBarObj;
+    private Slider targetHealthBar;
+    private Text targetHealthBarText;
 
     [Header("Movement Settings")]
     [SerializeField]
-    private LayerMask _groundMask;
+    private LayerMask groundMask;
     public float MoveSpeed = 6f;
     public float PDrag = 6f;
     public float AirDrag = 2f;
@@ -39,55 +38,52 @@ namespace Assets.Scripts
     public float MaxSpeedMultiplier;
     public Weapons Weapon = Weapons.Blaster;
 
-    private Vector3 _position;
-    private float _horizontalMovement;
-    private float _verticalMovement;
-    private float _movementMultiplier = 10f;
-    [SerializeField] private float _airSpeedMultiplier = 0.4f;
-    private Vector3 _moveDirection;
+    private Vector3 position;
+    private float horizontalMovement;
+    private float verticalMovement;
+    private float movementMultiplier = 10f;
+    [SerializeField] private float airSpeedMultiplier = 0.4f;
+    private Vector3 moveDirection;
 
-    private Rigidbody _rigbod;
-    private bool _isGrounded = false;
-    private bool _isFlying = false;
-    private bool _isBoxSummonAuto = false;
-    private bool _isBoxAutoAlign = false;
-    private Vector3 _maxFlyingSpeed;
-    private float _maxSpeedDifferentialY;
+    private Rigidbody rigbod;
+    private bool isCrouching;
+    private bool isGrounded = false;
+    private bool isFlying = false;
+    private bool isBoxSummonAuto = false;
+    private bool isBoxAutoAlign = false;
+    private Vector3 maxFlyingSpeed;
+    private float maxSpeedDifferentialY;
     public int MaxFlyingSpeedY = 0;
     public int MaxFlyingSpeedXz = 0;
-
-    [Header("Player KeyCode Settings")]
-    private KeyMap _map;
 
     [Header("Player Stats Settings")]
     public float PlayerHeight = 2f;
 
     [Header("Player Health Settings")]
-    [SerializeField] private float _health = 100f;
-    [SerializeField] private float _maxHealth = 100f;
-    [SerializeField] private float _playerPercentFactor;
-    private float _targetPercentFactor;
+    [SerializeField] private float health = 100f;
+    [SerializeField] private float maxHealth = 100f;
+    [SerializeField] private float playerPercentFactor;
+    private float targetPercentFactor;
     #endregion Properties
 
     #region Event Handlers
 
     private void Start()
     {
-      _maxFlyingSpeed.y = MaxFlyingSpeedY;
-      _maxFlyingSpeed.x = MaxFlyingSpeedXz;
-      _maxFlyingSpeed.z = MaxFlyingSpeedXz;
-      PlayerModelCollider.material = _normalPlayer;
-      _rigbod = GetComponent<Rigidbody>();
-      _rigbod.freezeRotation = true;
+      maxFlyingSpeed.y = MaxFlyingSpeedY;
+      maxFlyingSpeed.x = MaxFlyingSpeedXz;
+      maxFlyingSpeed.z = MaxFlyingSpeedXz;
+      PlayerModelCollider.material = normalPlayer;
+      rigbod = GetComponent<Rigidbody>();
+      rigbod.freezeRotation = true;
       OverheadCam.enabled = false;
       SetupHealthBars();
-      _map = KeyMap.Instance;
     }
 
     private void Update()
     {
       if (CanvasUI.UiActive) return;
-      _isGrounded = Physics.Raycast(transform.position, Vector3.down, PlayerHeight / 2 + .1f, _groundMask);
+      isGrounded = Physics.Raycast(transform.position, Vector3.down, PlayerHeight / 2 + .01f, groundMask);
 
       MyInput();
       FireWeapon();
@@ -103,8 +99,8 @@ namespace Assets.Scripts
     private void FixedUpdate()
     {
       if (CanvasUI.UiActive) return;
-      if (_map.KeyList[_map.Up].IsKey() && _isFlying == true) Up();
-      if (_map.KeyList[_map.Down].IsKey() && _isFlying == true) Down();
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.Up].IsKey() && isFlying == true) Up();
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.Down].IsKey() && isFlying == true) Down();
     }
 
     #endregion Event Handlers
@@ -113,81 +109,97 @@ namespace Assets.Scripts
 
     private void PlayerMoveModes()
     {
-      _isFlying = false;
-      _rigbod.useGravity = true;
-      _airSpeedMultiplier = 0.06f;
+      isFlying = false;
+      rigbod.useGravity = true;
+      airSpeedMultiplier = 0.06f;
       AirDrag = 0.2f;
-      if (_map.KeyList[_map.ModeNormal].IsKeyDown())
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.ModeNormal].IsKeyDown())
       {
-        PlayerModelCollider.material = _normalPlayer;
+        PlayerModelCollider.material = normalPlayer;
         //print("Normal");
 
       }
-      if (_map.KeyList[_map.ModeBounce].IsKeyDown())
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.ModeBounce].IsKeyDown())
       {
         PlayerModelCollider.material = PlayerBounce;
         //print("Bounce ");
 
       }
 
-      if (!_map.KeyList[_map.ModeFlying].IsKeyDown()) return;
+      if (!KeyMap.Instance.KeyList[KeyMap.Instance.ModeFlying].IsKeyDown()) return;
       PlayerModelCollider.material = Flying;
       //print("Flying");
 
-      _isFlying = true;
-      _airSpeedMultiplier = 0.5f;
+      isFlying = true;
+      airSpeedMultiplier = 0.5f;
       AirDrag = 2f;
     }
 
     private void MyInput()
     {
-      _horizontalMovement = Input.GetAxisRaw("Horizontal");
-      _verticalMovement = Input.GetAxisRaw("Vertical");
+      horizontalMovement = Input.GetAxisRaw("Horizontal");
+      verticalMovement = Input.GetAxisRaw("Vertical");
 
       // this will set the move direction to the direction the camera is pointing.
-      _moveDirection = MainCamera.transform.forward * _verticalMovement + MainCamera.transform.right * _horizontalMovement;
+      moveDirection = MainCamera.transform.forward * verticalMovement + MainCamera.transform.right * horizontalMovement;
     }
     
     private void MovePlayer()
     {
-      _rigbod.AddForce(_movementMultiplier * MoveSpeed * (_isGrounded ? 1 : _airSpeedMultiplier) * _moveDirection.normalized, ForceMode.Acceleration);
+      rigbod.AddForce(movementMultiplier * MoveSpeed * (isGrounded ? 1 : airSpeedMultiplier) * moveDirection.normalized, ForceMode.Acceleration);
     }
 
     private void Jump()
     {
-      if (_map.KeyList[_map.Jump].IsKeyDown() && _isGrounded)
-        _rigbod.AddForce((transform.up) * JumpForce, ForceMode.Impulse);
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.Jump].IsKeyDown() && isGrounded)
+        rigbod.AddForce((transform.up) * JumpForce, ForceMode.Impulse);
     }
     
     private void Up() 
     {
-      if (_rigbod.velocity.y < _maxFlyingSpeed.y)
-        _rigbod.AddForce(UpForce * Time.deltaTime * transform.up);
+      if (rigbod.velocity.y < maxFlyingSpeed.y)
+        rigbod.AddForce(UpForce * Time.deltaTime * transform.up);
     }
     
     private void Down()
     {
-      _rigbod.AddForce(DownForce * Time.deltaTime * transform.up);
+      rigbod.AddForce(DownForce * Time.deltaTime * transform.up);
     }
 
+    private void Crouch()
+    {
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.Crouch].IsKey())
+      {
+        if (isCrouching) return;
+        transform.localScale = Vector3.Lerp(transform.localScale, new Vector3(transform.localScale.x, transform.localScale.y - 1, transform.localScale.z), 0.1f);
+        transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), 0.05f);
+        isCrouching = true;
+      }
+      else if (isCrouching)
+      {
+        transform.localScale = Vector3.Lerp(transform.localScale, new Vector3(transform.localScale.x, transform.localScale.y + 1, transform.localScale.z), 0.1f);
+        transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), 0.05f);
+        isCrouching = false;
+      }
+    }
     private void SetSpeeds()
     {
       //Max speed stuff
-      if (_rigbod.velocity.y > _maxFlyingSpeed.y)//Up max
+      if (rigbod.velocity.y > maxFlyingSpeed.y)//Up max
       {
-        _maxSpeedDifferentialY = (_maxFlyingSpeed.y - _rigbod.velocity.y) * MaxSpeedMultiplier;
-        _rigbod.AddForce(_maxSpeedDifferentialY * Time.deltaTime * transform.up);
+        maxSpeedDifferentialY = (maxFlyingSpeed.y - rigbod.velocity.y) * MaxSpeedMultiplier;
+        rigbod.AddForce(maxSpeedDifferentialY * Time.deltaTime * transform.up);
       }
 
-      if (!(_rigbod.velocity.y < -_maxFlyingSpeed.y * 2)) return;
-      _maxSpeedDifferentialY = (-_rigbod.velocity.y - _maxFlyingSpeed.y) * MaxSpeedMultiplier;
-      _rigbod.AddForce(_maxSpeedDifferentialY * Time.deltaTime * transform.up);
+      if (!(rigbod.velocity.y < -maxFlyingSpeed.y * 2)) return;
+      maxSpeedDifferentialY = (-rigbod.velocity.y - maxFlyingSpeed.y) * MaxSpeedMultiplier;
+      rigbod.AddForce(maxSpeedDifferentialY * Time.deltaTime * transform.up);
 
     }
     
     private void ControlDrag()
     {
-      _rigbod.drag = _isGrounded ? PDrag : AirDrag;
+      rigbod.drag = isGrounded ? PDrag : AirDrag;
     }
     
     #endregion Movement
@@ -195,7 +207,7 @@ namespace Assets.Scripts
     #region Cameras
     private void SwitchCameras()
     {
-      if (Input.GetKeyDown(KeyCode.C))
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.OverheadCamera].IsKeyDown())
       {
         OverheadCam.enabled = !OverheadCam.enabled;
       }
@@ -205,38 +217,39 @@ namespace Assets.Scripts
     #region Boxes
     private void SummonBoxes()
     {
-      if (_map.KeyList[_map.BoxSummon].IsKeyDown())
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.BoxSummon].IsKeyDown())
       {
-        _position = transform.position;
-        CreateNewBox(_position);
+        position = transform.position;
+        CreateNewBox(position);
       }
-      if (_map.KeyList[_map.BoxAutoSummon].IsKeyDown())
+      if (KeyMap.Instance.KeyList[KeyMap.Instance.BoxAutoSummon].IsKeyDown())
       {
-        _isBoxSummonAuto = !_isBoxSummonAuto;
+        isBoxSummonAuto = !isBoxSummonAuto;
       }
-      if (_isBoxSummonAuto == true)
+      if (isBoxSummonAuto == true)
       {
-        _position = transform.position;
-        CreateNewBox(_position);
+        position = transform.position;
+        CreateNewBox(position);
       }
 
-      if (!_map.KeyList[_map.BoxAutoAlign].IsKeyDown()) return;
-      _isBoxAutoAlign = _isBoxAutoAlign != true;
+      if (!KeyMap.Instance.KeyList[KeyMap.Instance.BoxAutoAlign].IsKeyDown()) return;
+      isBoxAutoAlign = isBoxAutoAlign != true;
 
     }
     
     private GameObject CreateNewBox(Vector3 position)
     {
-      if (_isBoxAutoAlign)
+      Vector3 boxPosition = position;
+      if (isBoxAutoAlign)
       {
-        position.y = Mathf.Round(position.y);
-        position.x = Mathf.Round(position.x);
-        position.z = Mathf.Round(position.z);
+        boxPosition.y = Mathf.Round(position.y);
+        boxPosition.x = Mathf.Round(position.x);
+        boxPosition.z = Mathf.Round(position.z);
       }
       GameObject newGameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-      position.y -= 1.5f;
-      newGameObject.transform.position = (position);
-      newGameObject.transform.localScale = new(1, 1, 1);
+      boxPosition.y -= 1.5f;
+      newGameObject.transform.position = (boxPosition);
+      newGameObject.transform.localScale = new Vector3(1, 1, 1);
       newGameObject.layer = 3;
       return newGameObject;
 
@@ -260,7 +273,7 @@ namespace Assets.Scripts
 
     private void FireProjectile(ObjectPool.PoolType type)
     {
-      if (!_map.KeyList[_map.Fire].IsKeyDown()) return;
+      if (!KeyMap.Instance.KeyList[KeyMap.Instance.Fire].IsKeyDown()) return;
       GameObject projectile = ObjectPool.Instance.GetPooledObject(type);
       if (projectile == null) return;
       projectile.SetActive(true);
@@ -286,28 +299,28 @@ namespace Assets.Scripts
     #region Health
     public void ApplyDamage(float damage)
     {
-      _health -= damage;
-      if(_health < 0) _health = 0;
-      _playerHealthBar.value = _health * _playerPercentFactor;
-      _playerHealthBarObj.GetComponentInChildren<Text>().text = _playerHealthBar.value + "%";
-      if (_health == 0) PlayerDeath();
+      health -= damage;
+      if(health < 0) health = 0;
+      playerHealthBar.value = health * playerPercentFactor;
+      playerHealthBarObj.GetComponentInChildren<Text>().text = playerHealthBar.value + "%";
+      if (health == 0) PlayerDeath();
     }
 
     private void SetupHealthBars()
     {
-      _playerHealthBarObj = GameObject.Find("PlayerHealthBar");
-      _playerHealthBar = _playerHealthBarObj.GetComponent<Slider>();
-      _playerHealthBarText = _playerHealthBarObj.GetComponentInChildren<Text>();
-      _playerHealthBarObj.SetActive(true);
+      playerHealthBarObj = GameObject.Find("PlayerHealthBar");
+      playerHealthBar = playerHealthBarObj.GetComponent<Slider>();
+      playerHealthBarText = playerHealthBarObj.GetComponentInChildren<Text>();
+      playerHealthBarObj.SetActive(true);
 
-      _targetHealthBarObj = GameObject.Find("TargetHealthBar");
-      _targetHealthBar = _targetHealthBarObj.GetComponent<Slider>();
-      _targetHealthBarText = _targetHealthBar.GetComponentInChildren<Text>();
-      _targetHealthBarObj.SetActive(false);
+      targetHealthBarObj = GameObject.Find("TargetHealthBar");
+      targetHealthBar = targetHealthBarObj.GetComponent<Slider>();
+      targetHealthBarText = targetHealthBar.GetComponentInChildren<Text>();
+      targetHealthBarObj.SetActive(false);
 
-      _playerPercentFactor = _playerHealthBar.maxValue / _maxHealth;
-      _playerHealthBar.value = _health * _playerPercentFactor;
-      _playerHealthBarText.text = _playerHealthBar.value + "%";
+      playerPercentFactor = playerHealthBar.maxValue / maxHealth;
+      playerHealthBar.value = health * playerPercentFactor;
+      playerHealthBarText.text = playerHealthBar.value + "%";
     }
 
     private void SetupTargetHealthBar(GameObject target)
@@ -315,14 +328,14 @@ namespace Assets.Scripts
       EnemyController enemy = target.GetComponent<EnemyController>();
       if (enemy != null)
       {
-        _targetPercentFactor = _targetHealthBar.maxValue / enemy._maxHealth;
-        _targetHealthBar.value = enemy._health * _targetPercentFactor;
-        _targetHealthBarText.text = _targetHealthBar.value + "%";
+        targetPercentFactor = targetHealthBar.maxValue / enemy._maxHealth;
+        targetHealthBar.value = enemy._health * targetPercentFactor;
+        targetHealthBarText.text = targetHealthBar.value + "%";
       }
 
-      _targetPercentFactor = _targetHealthBar.maxValue / _maxHealth;
-      _playerHealthBar.value = _health * _targetPercentFactor;
-      _playerHealthBarText.text = _playerHealthBar.value + "%";
+      targetPercentFactor = targetHealthBar.maxValue / maxHealth;
+      playerHealthBar.value = health * targetPercentFactor;
+      playerHealthBarText.text = playerHealthBar.value + "%";
     }
 
     private void PlayerDeath()

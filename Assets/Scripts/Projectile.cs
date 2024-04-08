@@ -19,25 +19,16 @@ namespace Assets.Scripts
     {
       _transpired += Time.fixedDeltaTime;
       if (_transpired < LifeSpan) return;
-      // Old method
-      //Destroy(gameObject);
-
-      //New method with object pooling
       _transpired = 0;
       gameObject.SetActive(false);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-      // If we hit something lose the bolt.
-      // We can add a particle effect on the contact point if we wish...
+      // If we hit something disable the bolt, add a particle effect (Splash) and leave an impact point.
 
-      // Old method
-      //Destroy(gameObject);
-
-      //New method with object pooling and particle effects
-       if (!ParticlesEnabled) return;
-     _transpired = 0;
+      if (!ParticlesEnabled) return;
+      _transpired = 0;
       ContactPoint contact = collision.GetContact(0);
 
       GameObject splashPrefab = ObjectPool.Instance.GetPooledObject(ObjectPool.PoolType.Splash);

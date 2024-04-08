@@ -18,37 +18,35 @@ namespace Assets.Scripts
 
     public Dictionary<string, KeyInput> KeyList = new();
 
-    internal string Fire = "Fire";
-    internal string Weapon1 = "Weapon1";
-    internal string Weapon2 = "Weapon2";
-    internal string Weapon3 = "Weapon3";
-    internal string Weapon4 = "Weapon4";
-    internal string Weapon5 = "Weapon5";
-    internal string Jump = "Jump";
-    internal string Forward = "Forward";
-    internal string Backward = "Backward";
-    internal string Left = "Left";
-    internal string Right = "Right";
-    internal string Up = "Up";
-    internal string Down = "Down";
-    internal string Crouch = "Crouch";
-    internal string ModeNormal = "ModeNormal";
-    internal string ModeBounce = "ModeBounce";
-    internal string ModeFlying = "ModeFlying";
-    internal string CameraUp = "CameraUp";
-    internal string CameraDown = "CameraDown";
-    internal string CameraLeft = "CameraLeft";
-    internal string CameraRight = "CameraRight";
-    internal string CameraCenter = "CameraCenter";
-    internal string OverheadCamera = "OverheadCamera";
-    internal string SwitchCamera = "SwitchCamera";
-    internal string CameraRotate = "CameraRotate";
-    internal string CameraPan = "CameraPan";
-    internal string BoxSummon = "BoxSummon";
-    internal string BoxAutoSummon = "BoxAutoSummon";
-    internal string BoxAutoAlign = "BoxAutoAlign";
-    internal string BoxReset = "BoxReset";
-    internal string KeyMapUI = "KeyMapUI";
+    internal string Fire = nameof(Fire);
+    internal string Weapon1 = nameof(Weapon1);
+    internal string Weapon2 = nameof(Weapon2);
+    internal string Weapon3 = nameof(Weapon3);
+    internal string Weapon4 = nameof(Weapon4);
+    internal string Weapon5 = nameof(Weapon5);
+    internal string Jump = nameof(Jump);
+    internal string Forward = nameof(Forward);
+    internal string Backward = nameof(Backward);
+    internal string Left = nameof(Left);
+    internal string Right = nameof(Right);
+    internal string Up = nameof(Up);
+    internal string Down = nameof(Down);
+    internal string Crouch = nameof(Crouch);
+    internal string ModeNormal = nameof(ModeNormal);
+    internal string ModeBounce = nameof(ModeBounce);
+    internal string ModeFlying = nameof(ModeFlying);
+    internal string OverheadCamera = nameof(OverheadCamera);
+    internal string SwitchCamera = nameof(SwitchCamera);
+    internal string BoxSummon = nameof(BoxSummon);
+    internal string BoxAutoSummon = nameof(BoxAutoSummon);
+    internal string BoxAutoAlign = nameof(BoxAutoAlign);
+    internal string BoxReset = nameof(BoxReset);
+    internal string KeyMapUI = nameof(KeyMapUI);
+
+    internal string NearestTarget = nameof(NearestTarget);
+    internal string NextTarget = nameof(NextTarget);
+    internal string PrevTarget = nameof(PrevTarget);
+
 
     void Awake()
     {
@@ -438,21 +436,18 @@ namespace Assets.Scripts
     KeyList.Add(ModeBounce, new KeyInput(ModeBounce, KeyCode.None, KeyCode.F2));
     KeyList.Add(ModeFlying, new KeyInput(ModeFlying, KeyCode.None, KeyCode.F3));
 
-    KeyList.Add(CameraUp, new KeyInput(CameraUp, KeyCode.None, KeyCode.Keypad8));
-    KeyList.Add(CameraDown, new KeyInput(CameraDown, KeyCode.None, KeyCode.Keypad7));
-    KeyList.Add(CameraLeft, new KeyInput(CameraLeft, KeyCode.None, KeyCode.Keypad4));
-    KeyList.Add(CameraRight, new KeyInput(CameraRight, KeyCode.None, KeyCode.Keypad6));
-    KeyList.Add(CameraCenter, new KeyInput(CameraCenter, KeyCode.None, KeyCode.Keypad5));
     KeyList.Add(OverheadCamera, new KeyInput(OverheadCamera, KeyCode.None, KeyCode.O));
     KeyList.Add(SwitchCamera, new KeyInput(SwitchCamera, KeyCode.None, KeyCode.Z));
-    KeyList.Add(CameraRotate, new KeyInput(CameraRotate, KeyCode.None, KeyCode.Mouse1));
-    KeyList.Add(CameraPan, new KeyInput(CameraPan, KeyCode.None, KeyCode.Mouse2));
 
     KeyList.Add(BoxSummon, new KeyInput(BoxSummon, KeyCode.None, KeyCode.B));
     KeyList.Add(BoxAutoSummon, new KeyInput(BoxAutoSummon, KeyCode.None, KeyCode.F4));
     KeyList.Add(BoxAutoAlign, new KeyInput(BoxAutoAlign, KeyCode.None, KeyCode.F5));
     KeyList.Add(BoxReset, new KeyInput(BoxReset, KeyCode.None, KeyCode.Backslash));
     KeyList.Add(KeyMapUI, new KeyInput(KeyMapUI, KeyCode.LeftShift, KeyCode.K));
+    
+    KeyList.Add(NearestTarget, new KeyInput(NearestTarget, KeyCode.None, KeyCode.T));
+    KeyList.Add(NextTarget, new KeyInput(NearestTarget, KeyCode.None, KeyCode.E));
+    KeyList.Add(PrevTarget, new KeyInput(NearestTarget, KeyCode.None, KeyCode.Q));
   }
 
     internal static KeyCode GetKeyCode(string codeName)

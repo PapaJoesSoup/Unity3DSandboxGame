@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Assets.Scripts
 {
@@ -13,6 +11,7 @@ namespace Assets.Scripts
   {
 
     private static StringBuilder sb = new StringBuilder();
+    private static string settingsFile = "PlayerSettings.txt";
 
     // Start is called before the first frame update
     void Start()
@@ -24,27 +23,24 @@ namespace Assets.Scripts
     {
       BuildSettingsFile();
       // serialize JSON directly to a file
-      using StreamWriter file = File.CreateText(Application.persistentDataPath + "PlayerSettings.txt");
+      using StreamWriter file = File.CreateText(Application.persistentDataPath + settingsFile);
       file.Write(sb.ToString());
     }
 
     public static void Load()
     {
-      JObject settingsFile = JObject.Parse(File.ReadAllText(Application.persistentDataPath + "PlayerSettings.txt"));
-      if (settingsFile.Count == 0) return;
+      JObject settingsObject = JObject.Parse(File.ReadAllText(Application.persistentDataPath + settingsFile));
+      if (settingsObject.Count == 0) return;
       // pull data from settings file using jsonConvert
       //...
-
     }
 
     private void GetSettings()
     {
-
       PlayerSettings.Downgrades = new List<string>();
       PlayerSettings.Downgrades = new List<string>();
       PlayerSettings.Downgrades = new List<string>();
       PlayerSettings.Downgrades = new List<string>();
-
     }
 
     private static void BuildSettingsFile()

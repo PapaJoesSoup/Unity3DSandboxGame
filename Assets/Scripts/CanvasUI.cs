@@ -1,24 +1,23 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Assets.Scripts
 {
   public class CanvasUI : MonoBehaviour
   {
     internal static bool UiActive = false;
-    private GameObject _keyMapper;
-    private KeyMap _map;
+    private GameObject keyMapper;
+    private KeyMap map;
 
     private void Awake()
     {
-      _keyMapper = GameObject.Find("KeyMapper");
+      keyMapper = GameObject.Find("KeyMapper");
     }
     
     // Start is called before the first frame update
     private void Start()
     {
-      _map = KeyMap.Instance;
-      _keyMapper.SetActive(false);
+      map = KeyMap.Instance;
+      keyMapper.SetActive(false);
       UiActive = false;
       SetCursorLock(true);
     }
@@ -26,8 +25,8 @@ namespace Assets.Scripts
     // Update is called once per frame
     private void Update()
     {
-      if (!_map.KeyList[_map.KeyMapUI].IsKeyDown() || _keyMapper.activeInHierarchy) return;
-      _keyMapper.SetActive(true);
+      if (!map.KeyList[map.KeyMapUI].IsKeyDown() || keyMapper.activeInHierarchy) return;
+      keyMapper.SetActive(true);
       UiActive = true;
       SetCursorLock(false);
     }
@@ -35,7 +34,7 @@ namespace Assets.Scripts
     internal void OnCloseClick()
     {
       SetCursorLock(true);
-      _keyMapper.SetActive(false);
+      keyMapper.SetActive(false);
     }
 
     internal static void SetCursorLock(bool enable)

@@ -1,5 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3486555334533141424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5807208406995623003}
+  m_Layer: 0
+  m_Name: CameraPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5807208406995623003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3486555334533141424}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4799240200155536305}
+  m_Father: {fileID: 4799240200389069786}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4799240199400795051
 GameObject:
   m_ObjectHideFlags: 0
@@ -106,6 +138,7 @@ MonoBehaviour:
   taaMotionVectorRejection: 0
   taaAntiHistoryRinging: 0
   taaBaseBlendFactor: 0.875
+  taaJitterScale: 1
   physicalParameters:
     m_Iso: 200
     m_ShutterSpeed: 0.005
@@ -453,13 +486,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4799240200155536308}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.58, z: 0.47}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4799240200389069786}
-  m_RootOrder: 2
+  m_Father: {fileID: 5807208406995623003}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &4799240200155536310
 Camera:
@@ -581,6 +614,7 @@ MonoBehaviour:
   taaMotionVectorRejection: 0
   taaAntiHistoryRinging: 0
   taaBaseBlendFactor: 0.875
+  taaJitterScale: 1
   physicalParameters:
     m_Iso: 200
     m_ShutterSpeed: 0.005
@@ -711,7 +745,7 @@ Transform:
   m_Children:
   - {fileID: 4799240199422449987}
   - {fileID: 4799240199747920596}
-  - {fileID: 4799240200155536305}
+  - {fileID: 5807208406995623003}
   - {fileID: 4799240199656595571}
   - {fileID: 4799240199400795050}
   m_Father: {fileID: 0}
@@ -847,183 +881,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab01390b7a219804a92084368ea9d46c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Fire:
-    Action: Fire
-    Modifier1: 0
-    KeyPress1: 323
-    Modifier2: 0
-    KeyPress2: 0
-  Weapon1:
-    Action: Weapon1
-    Modifier1: 0
-    KeyPress1: 49
-    Modifier2: 0
-    KeyPress2: 0
-  Weapon2:
-    Action: Weapon2
-    Modifier1: 0
-    KeyPress1: 50
-    Modifier2: 0
-    KeyPress2: 0
-  Weapon3:
-    Action: Weapon3
-    Modifier1: 0
-    KeyPress1: 51
-    Modifier2: 0
-    KeyPress2: 0
-  Weapon4:
-    Action: Weapon4
-    Modifier1: 0
-    KeyPress1: 52
-    Modifier2: 0
-    KeyPress2: 0
-  Weapon5:
-    Action: Weapon5
-    Modifier1: 0
-    KeyPress1: 53
-    Modifier2: 0
-    KeyPress2: 0
-  Jump:
-    Action: Jump
-    Modifier1: 0
-    KeyPress1: 32
-    Modifier2: 0
-    KeyPress2: 0
-  Forward:
-    Action: Forward
-    Modifier1: 0
-    KeyPress1: 119
-    Modifier2: 0
-    KeyPress2: 0
-  Backward:
-    Action: Backward
-    Modifier1: 0
-    KeyPress1: 115
-    Modifier2: 0
-    KeyPress2: 0
-  Left:
-    Action: Left
-    Modifier1: 0
-    KeyPress1: 97
-    Modifier2: 0
-    KeyPress2: 0
-  Right:
-    Action: Right
-    Modifier1: 0
-    KeyPress1: 100
-    Modifier2: 0
-    KeyPress2: 0
-  Up:
-    Action: Up
-    Modifier1: 0
-    KeyPress1: 304
-    Modifier2: 0
-    KeyPress2: 0
-  Down:
-    Action: Down
-    Modifier1: 0
-    KeyPress1: 306
-    Modifier2: 0
-    KeyPress2: 0
-  Crouch:
-    Action: Crouch
-    Modifier1: 0
-    KeyPress1: 99
-    Modifier2: 0
-    KeyPress2: 0
-  ModeNormal:
-    Action: ModeNormal
-    Modifier1: 0
-    KeyPress1: 282
-    Modifier2: 0
-    KeyPress2: 0
-  ModeBounce:
-    Action: ModeBounce
-    Modifier1: 0
-    KeyPress1: 283
-    Modifier2: 0
-    KeyPress2: 0
-  ModeFlying:
-    Action: ModeFlying
-    Modifier1: 0
-    KeyPress1: 284
-    Modifier2: 0
-    KeyPress2: 0
-  CameraUp:
-    Action: CameraUp
-    Modifier1: 0
-    KeyPress1: 264
-    Modifier2: 0
-    KeyPress2: 0
-  CameraDown:
-    Action: CameraDown
-    Modifier1: 0
-    KeyPress1: 263
-    Modifier2: 0
-    KeyPress2: 0
-  CameraLeft:
-    Action: CameraLeft
-    Modifier1: 0
-    KeyPress1: 260
-    Modifier2: 0
-    KeyPress2: 0
-  CameraRight:
-    Action: CameraRight
-    Modifier1: 0
-    KeyPress1: 262
-    Modifier2: 0
-    KeyPress2: 0
-  CameraCenter:
-    Action: CameraCenter
-    Modifier1: 0
-    KeyPress1: 261
-    Modifier2: 0
-    KeyPress2: 0
-  OverheadCamera:
-    Action: OverheadCamera
-    Modifier1: 0
-    KeyPress1: 111
-    Modifier2: 0
-    KeyPress2: 0
-  SwitchCamera:
-    Action: SwitchCamera
-    Modifier1: 0
-    KeyPress1: 122
-    Modifier2: 0
-    KeyPress2: 0
-  CameraRotate:
-    Action: CameraRotate
-    Modifier1: 0
-    KeyPress1: 324
-    Modifier2: 0
-    KeyPress2: 0
-  CameraPan:
-    Action: CameraPan
-    Modifier1: 0
-    KeyPress1: 325
-    Modifier2: 0
-    KeyPress2: 0
-  BoxSummon:
-    Action: BoxSummon
-    Modifier1: 0
-    KeyPress1: 98
-    Modifier2: 0
-    KeyPress2: 0
-  BoxAutoSummon:
-    Action: BoxAutoSummon
-    Modifier1: 0
-    KeyPress1: 285
-    Modifier2: 0
-    KeyPress2: 0
-  BoxAutoAlign:
-    Action: BoxAutoAlign
-    Modifier1: 0
-    KeyPress1: 286
-    Modifier2: 0
-    KeyPress2: 0
-  BoxReset:
-    Action: BoxReset
-    Modifier1: 0
-    KeyPress1: 92
-    Modifier2: 0
-    KeyPress2: 0

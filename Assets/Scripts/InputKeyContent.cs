@@ -7,7 +7,6 @@ namespace Assets.Scripts
   {
     public GameObject KeyItemPrefab; 
     private Dictionary<string,KeyInput> m_Keys;
-    private GameObject _content;
 
     private void Awake()
     {
@@ -20,7 +19,7 @@ namespace Assets.Scripts
       foreach (KeyValuePair<string, KeyInput> key in m_Keys)
       {
         GameObject keyItem = Instantiate(KeyItemPrefab, this.transform);
-        keyItem.GetComponent<InputKeyItem>().InputKey = key.Value;
+        keyItem.GetComponent<InputKeyItemUi>().InputKey = key.Value;
       }
     }
 
